@@ -1,0 +1,39 @@
+<!DOCTYPE html><html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Agent Tool-Call Authorization Audit — protocol-agnostic, replayable verdicts | Correctover</title>
+<meta name="description" content="Does your LLM agent exceed the authorization it was actually granted — parameter by parameter? A frozen 576-anchor verdict table (ALLOW/DENY/ESCALATE) with reason codes, independently replayable in seconds. Model-agnostic, protocol-agnostic: OpenAI function calling, Google ADK, LangGraph, crewAI, MCP, A2A, custom runtimes.">
+<meta name="keywords" content="agent tool authorization audit, LLM tool permission audit, agent action auditability, tool-call verdict table, delegated authorization, RFC 8693 token exchange, parameter-level authorization, agent compliance evidence">
+<link rel="canonical" href="https://dshcorrectover.github.io/tool-audit/">
+<style>body{font:16px/1.7 -apple-system,Segoe UI,Roboto,sans-serif;max-width:760px;margin:0 auto;padding:2rem;color:#1a1a1a}h1{font-size:1.9rem;line-height:1.3}code,pre{background:#f4f4f4;border-radius:6px;padding:.2em .4em}pre{padding:1rem;overflow-x:auto}table{border-collapse:collapse;width:100%}td,th{border:1px solid #ddd;padding:.5rem;text-align:left}a{color:#0969da}</style></head><body>
+<h1>Did your agent exceed the authorization it was <em>actually</em> granted?</h1>
+<p><strong>Not "is this tool whitelisted" — but "was every parameter and target of this call approved?"</strong>
+Isolation-legal API calls to the wrong server are still unacceptable. Tool-call authorization needs verdicts per parameter, per target, per runtime state — before execution, with tamper-evident receipts after.</p>
+
+<h2>What you get (free, replayable, CC0)</h2>
+<ul>
+<li><strong>576 verdict anchors</strong> — exhaustive cross-product of six dimensions: delegation shape × revocation × tool version × side effect × runtime state × integrity. Not hand-tuned: the verdict distribution is a mathematical consequence.</li>
+<li><strong>Three verdicts with stable reason codes</strong> — ALLOW / DENY / ESCALATE. An irreversible action carries its own code (<code>irreversible-authorized-exact-fresh</code>); a receipt reader never guesses.</li>
+<li><strong>Independent replay in seconds</strong> — <code>python3 verify-recovery.py</code>: different code path from the table, disagreement = FAIL. Negative self-test included (<code>--tamper</code>): 288 tampered anchors must be refused.</li>
+</ul>
+
+<pre>git clone https://github.com/DSHCorrectover/correctover-recovery-admission
+cd correctover-recovery-admission && python3 verify-recovery.py
+# → agreement: 576/576 … STATUS: PASS</pre>
+
+<h2>Model-agnostic. Protocol-agnostic.</h2>
+<p>The decision table judges <strong>action semantics</strong>, not protocol dialects. It maps mechanically onto:</p>
+<table>
+<tr><th>Surface</th><th>Status</th></tr>
+<tr><td>Google ADK</td><td><a href="https://github.com/google/adk-python/pull/8198">crosswalk PR #8198</a> · <a href="https://github.com/google/adk-python/issues/6099">decision-ledger #6099</a></td></tr>
+<tr><td>crewAI</td><td><a href="https://github.com/crewAIInc/crewAI/issues/6221">governance thread #6221</a></td></tr>
+<tr><td>OpenAI function calling · LangGraph · A2A · custom runtimes</td><td>same six dimensions, same table</td></tr>
+</table>
+
+<h2>Why ESCALATE matters</h2>
+<p>The table locates the human gate — nobody weighted it there. <code>irreversible × (non-fresh or non-exact)</code> and <code>failover × patch-drift</code> both escalate: routing traffic through an unapproved build gets the same gate as an irreversible action. An escalated action that later proceeds must carry a gate block whose <code>bound_args_digest</code> re-binds the exact dispatched args — a retry without a dedup key is not a retry, it is a second, unauthorized action.</p>
+
+<h2>Independent review engagement</h2>
+<p>Bounded, fixed-fee reviews of admission/authorization semantics for frameworks and platforms — every finding ships with a replay pack. <strong>wangguigui@correctover.com</strong></p>
+
+<p style="color:#666;font-size:.9rem">Dataset CC0 · code Apache-2.0 · nothing requires trusting us — every claim replays from your machine.</p>
+</body></html>
